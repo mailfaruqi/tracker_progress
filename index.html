@@ -530,7 +530,7 @@
 
         function saveData() {
             try {
-                appData = JSON.parse(JSON.stringify(appData));
+                localStorage.setItem('ieltsProgressData', JSON.stringify(appData));
                 showSaveStatus();
             } catch (error) {
                 console.error('Error saving data:', error);
@@ -538,7 +538,14 @@
         }
 
         function loadData() {
-            // In a real app, this would load from storage
+            try {
+                const savedData = localStorage.getItem('ieltsProgressData');
+                if (savedData) {
+                    appData = JSON.parse(savedData);
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         }
 
         function showSaveStatus() {
@@ -551,6 +558,7 @@
             const today = new Date();
             document.getElementById('testDate').value = today.toISOString().split('T')[0];
             document.getElementById('examDateInput').value = appData.targetDate;
+            
             // Set default time to current time if not already set
             if (!document.getElementById('testHour').value) {
                 const now = new Date();
@@ -575,14 +583,15 @@
             const testDate = document.getElementById('testDate').value;
             const testHour = document.getElementById('testHour').value;
             
-            const testId = `${testDate}_${testHour}_${appData.scores[testType].length}`;
+            // Create a unique ID using timestamp to avoid conflicts
+            const testId = `${testDate}_${testHour}_${Date.now()}`;
             
             appData.scores[testType].push({
                 id: testId,
                 date: testDate,
                 time: testHour,
                 score: score,
-                datetime: `${testDate} ${testHour}`
+                datetime: `${testDate}T${testHour}`
             });
             
             appData.scores[testType].sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
@@ -804,7 +813,7 @@
             
             updateCharts();
         }
-        
+
         function updateCharts() {
             const testTypes = ['listening', 'reading', 'writing', 'speaking'];
             
@@ -820,34 +829,34 @@
                         return date.toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric' 
-                });
-            });
-            
+                        });
+                    });
+                    
                     const scoreData = scores.map(s => s.score);
                     const targetData = new Array(scores.length).fill(target);
-            
+                    
                     chart.data.labels = labels;
                     chart.data.datasets[0].data = scoreData;
                     chart.data.datasets[1].data = targetData;
-            
+                    
                     // Update chart title to include target score
                     document.querySelector(`#${testType}Chart`).closest('.chart-wrapper')
                         .querySelector('.chart-title').textContent = 
                         `${testType.charAt(0).toUpperCase() + testType.slice(1)} Progress (Target: ${target})`;
-                        } else {
+                } else {
                     chart.data.labels = [];
                     chart.data.datasets[0].data = [];
                     chart.data.datasets[1].data = [];
-            
+                    
                     // Reset chart title
                     document.querySelector(`#${testType}Chart`).closest('.chart-wrapper')
-                    .querySelector('.chart-title').textContent = 
-                    `${testType.charAt(0).toUpperCase() + testType.slice(1)} Progress`;
+                        .querySelector('.chart-title').textContent = 
+                        `${testType.charAt(0).toUpperCase() + testType.slice(1)} Progress`;
+                }
+                
+                chart.update();
+            });
         }
-        
-        chart.update();
-    });
-}
 
         function exportData() {
             const dataToExport = {
@@ -880,6 +889,7 @@
                         targetDate: new Date('2025-11-01').toISOString().split('T')[0]
                     };
                     
+                    saveData();
                     updateUI();
                     updateCharts();
                     initializeForm();
