@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 IELTS Progress Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0E1117;
+            color: #F9FAFB;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .main-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .countdown-container {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin: 24px 0;
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
+        }
+        
+        .countdown-days {
+            color: #FFFFFF;
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .countdown-label {
+            color: #E0E7FF;
+            font-size: 16px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .countdown-date {
+            color: #C7D2FE;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .quote-container {
+            background: linear-gradient(135deg, #059669 0%, #0D9488 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quote-container::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            font-size: 120px;
+            color: rgba(255, 255, 255, 0.1);
+            font-family: Georgia, serif;
+        }
+        
+        .quote-text {
+            color: #FFFFFF;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .form-section {
+            background: linear-gradient(135deg, #1E2329 0%, #2B2F36 100%);
+            border: 1px solid #3A3F47;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .form-title {
+            color: #F9FAFB;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            color: #9CA3AF;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input, .form-group select {
+            background-color: #374151;
+            border: 1px solid #4B5563;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #F9FAFB;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6B7280;
+        }
+        
+        .btn-danger {
+            background: #EF4444;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 32px 0;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #1E2329 0%, #2B2F36 100%);
+            border: 1px solid #3A3F47;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            border-color: #4F46E5;
+        }
+        
+        .metric-title {
+            color: #9CA3AF;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .metric-value {
+            color: #F9FAFB;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .metric-subtitle {
+            color: #6B7280;
+            font-size: 13px;
+            font-weight: 400;
+        }
+        
+        .section-header {
+            color: #F9FAFB;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 32px 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #374151;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        
+        .chart-container {
+            background: linear-gradient(135deg, #1E2329 0%, #2B2F36 100%);
+            border: 1px solid #3A3F47;
+            border-radius: 12px;
+            padding: 20px;
+            height: 300px;
+        }
+        
+        .chart-title {
+            color: #F9FAFB;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .test-entries {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .test-entry {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .test-entry:hover {
+            background-color: #252C3A;
+            border-color: #4B5563;
+        }
+        
+        .test-info {
+            color: #F9FAFB;
+            font-weight: 500;
+        }
+        
+        .test-meta {
+            color: #9CA3AF;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        .delete-btn {
+            background: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .status-excellent { color: #10B981; }
+        .status-good { color: #3B82F6; }
+        .status-average { color: #F59E0B; }
+        .status-needs-work { color: #EF4444; }
+        
+        .save-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #059669;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .save-status.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .main-title { font-size: 32px; }
+            .countdown-days { font-size: 36px; }
+            .metric-value { font-size: 28px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="save-status" id="saveStatus">💾 Data Saved</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">🎯 IELTS Progress Tracker</h1>
+            
+            <div class="countdown-container">
+                <div class="countdown-days" id="daysLeft">0</div>
+                <div class="countdown-label">Days Until IELTS</div>
+                <div class="countdown-date" id="examDate">Set your exam date below</div>
+            </div>
+            
+            <div class="quote-container">
+                <div class="quote-text" id="dailyQuote">Your journey to IELTS success starts here!</div>
+            </div>
+        </div>
+        
+        <!-- Add Score Form -->
+        <div class="form-section">
+            <h2 class="form-title">📝 Add New Test Score</h2>
+            <form id="scoreForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="testType">Test Type</label>
+                        <select id="testType" required>
+                            <option value="listening">🎧 Listening</option>
+                            <option value="reading">📖 Reading</option>
+                            <option value="writing">✍️ Writing</option>
+                            <option value="speaking">🗣️ Speaking</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="score">Score</label>
+                        <select id="score" required>
+                            <option value="5.0">5.0 ⭐</option>
+                            <option value="5.5">5.5 ⭐</option>
+                            <option value="6.0" selected>6.0 ⭐</option>
+                            <option value="6.5">6.5 ⭐</option>
+                            <option value="7.0">7.0 ⭐</option>
+                            <option value="7.5">7.5 ⭐</option>
+                            <option value="8.0">8.0 ⭐</option>
+                            <option value="8.5">8.5 ⭐</option>
+                            <option value="9.0">9.0 ⭐</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="testDate">Test Date</label>
+                        <input type="date" id="testDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="testTime">Test Time</label>
+                        <input type="time" id="testTime" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn">➕ Add Score</button>
+            </form>
+        </div>
+        
+        <!-- Exam Date Setting -->
+        <div class="form-section">
+            <h2 class="form-title">🎯 Exam Settings</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="examDate">IELTS Exam Date</label>
+                    <input type="date" id="examDateInput">
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn" onclick="updateExamDate()">Update Exam Date</button>
+                    <button type="button" class="btn btn-secondary" onclick="exportData()">📤 Export Data</button>
+                    <button type="button" class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Metrics -->
+        <h2 class="section-header">📊 Current Performance</h2>
+        <div class="metrics-grid" id="metricsGrid">
+            <!-- Metrics will be populated by JavaScript -->
+        </div>
+        
+        <!-- Progress Charts -->
+        <h2 class="section-header">📈 Progress Analysis</h2>
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">🎧 Listening Progress</div>
+                <canvas id="listeningChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📖 Reading Progress</div>
+                <canvas id="readingChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">✍️ Writing Progress</div>
+                <canvas id="writingChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🗣️ Speaking Progress</div>
+                <canvas id="speakingChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Test Entries -->
+        <h2 class="section-header">📋 Recent Test Entries</h2>
+        <div class="test-entries" id="testEntries">
+            <!-- Test entries will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        let appData = {
+            scores: {
+                listening: [],
+                reading: [],
+                writing: [],
+                speaking: []
+            },
+            targetDate: new Date('2025-11-01').toISOString().split('T')[0]
+        };
+
+        // Motivational quotes
+        const quotes = [
+            "Success is the sum of small efforts, repeated day in and day out.",
+            "Every expert was once a beginner. Keep practicing!",
+            "Your limitation—it's only your imagination. Break through!",
+            "Push yourself, because no one else is going to do it for you.",
+            "Great things never come from comfort zones. Step up!",
+            "Dream it. Wish it. Do it. Achieve your IELTS goals!",
+            "The harder you work for something, the greater you'll feel when you achieve it.",
+            "Success doesn't just find you. You have to go out and get it.",
+            "Don't stop when you're tired. Stop when you're done!",
+            "Wake up with determination. Go to bed with satisfaction."
+        ];
+
+        // Charts
+        let charts = {};
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            initializeForm();
+            updateUI();
+            setDailyQuote();
+            initializeCharts();
+        });
+
+        // Data persistence functions
+        function saveData() {
+            try {
+                localStorage.setItem('ieltsProgressData', JSON.stringify(appData));
+                showSaveStatus();
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+        }
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('ieltsProgressData');
+                if (saved) {
+                    appData = JSON.parse(saved);
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function showSaveStatus() {
+            const status = document.getElementById('saveStatus');
+            status.classList.add('show');
+            setTimeout(() => status.classList.remove('show'), 2000);
+        }
+
+        // Initialize form with current date/time
+        function initializeForm() {
+            const today = new Date();
+            document.getElementById('testDate').value = today.toISOString().split('T')[0];
+            document.getElementById('testTime').value = today.toTimeString().slice(0, 5);
+            document.getElementById('examDateInput').value = appData.targetDate;
+        }
+
+        // Set daily quote
+        function setDailyQuote() {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const quote = quotes[dayOfYear % quotes.length];
+            document.getElementById('dailyQuote').textContent = quote;
+        }
+
+        // Handle form submission
+        document.getElementById('scoreForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const testType = document.getElementById('testType').value;
+            const score = parseFloat(document.getElementById('score').value);
+            const testDate = document.getElementById('testDate').value;
+            const testTime = document.getElementById('testTime').value;
+            
+            const testId = `${testDate}_${testTime}_${appData.scores[testType].length}`;
+            
+            appData.scores[testType].push({
+                id: testId,
+                date: testDate,
+                time: testTime,
+                score: score,
+                datetime: `${testDate} ${testTime}`
+            });
+            
+            // Sort by datetime
+            appData.scores[testType].sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+            
+            saveData();
+            updateUI();
+            updateCharts();
+            
+            // Reset form
+            this.reset();
+            initializeForm();
+            
+            alert(`Added ${testType} score: ${score}`);
+        });
+
+        // Update exam date
+        function updateExamDate() {
+            const newDate = document.getElementById('examDateInput').value;
+            if (newDate) {
+                appData.targetDate = newDate;
+                saveData();
+                updateUI();
+                alert('Exam date updated!');
+            }
+        }
+
+        // Calculate days left
+        function calculateDaysLeft() {
+            const today = new Date();
+            const examDate = new Date(appData.targetDate);
+            const diffTime = examDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return Math.max(0, diffDays);
+        }
+
+        // Get score statistics
+        function getScoreStats(testType) {
+            const scores = appData.scores[testType];
+            if (scores.length === 0) return { latest: 0, average: 0, best: 0, count: 0 };
+            
+            const scoreValues = scores.map(s => s.score);
+            return {
+                latest: scoreValues[scoreValues.length - 1],
+                average: Math.round((scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length) * 10) / 10,
+                best: Math.max(...scoreValues),
+                count: scores.length
+            };
+        }
+
+        // Get score status
+        function getScoreStatus(score) {
+            if (score >= 7.5) return { class: "status-excellent", text: "🔥 Excellent" };
+            if (score >= 7.0) return { class: "status-good", text: "🎯 Target Reached" };
+            if (score >= 6.0) return { class: "status-average", text: "📈 Good Progress" };
+            if (score > 0) return { class: "status-needs-work", text: "💪 Keep Practicing" };
+            return { class: "status-needs-work", text: "📚 Start Testing" };
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update countdown
+            const daysLeft = calculateDaysLeft();
+            document.getElementById('daysLeft').textContent = daysLeft;
+            
+            const examDate = new Date(appData.targetDate);
+            document.getElementById('examDate').textContent = examDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            // Update metrics
+            updateMetrics();
+            updateTestEntries();
+        }
+
+        // Update metrics cards
+        function updateMetrics() {
+            const testTypes = ['listening', 'reading', 'writing', 'speaking'];
+            const testIcons = ['🎧', '📖', '✍️', '🗣️'];
+            
+            let html = '';
+            
+            testTypes.forEach((test, index) => {
+                const stats = getScoreStats(test);
+                const status = getScoreStatus(stats.latest);
+                
+                html += `
+                <div class="metric-card">
+                    <div class="metric-title">${testIcons[index]} ${test.charAt(0).toUpperCase() + test.slice(1)}</div>
+                    <div class="metric-value">${stats.latest > 0 ? stats.latest : '—'}</div>
+                    <div class="metric-subtitle">
+                        Best: ${stats.best > 0 ? stats.best : '—'} • Avg: ${stats.average > 0 ? stats.average : '—'}<br>
+                        <span class="${status.class}">${status.text}</span> • ${stats.count} tests
+                    </div>
+                </div>
+                `;
+            });
+            
+            document.getElementById('metricsGrid').innerHTML = html;
+        }
+
+        // Update test entries
+        function updateTestEntries() {
+            let html = '';
+            const testTypes = ['listening', 'reading', 'writing', 'speaking'];
+            const testIcons = ['🎧', '📖', '✍️', '🗣️'];
+            
+            testTypes.forEach((test, index) => {
+                const scores = appData.scores[test];
+                const recentTests = scores.slice(-5).reverse();
+                
+                if (recentTests.length > 0) {
+                    html += `<h3 style="color: #F9FAFB; margin-top: 20px;">${testIcons[index]} ${test.charAt(0).toUpperCase() + test.slice(1)}</h3>`;
+                    
+                    recentTests.forEach(entry => {
+                        html += `
+                        <div class="test-entry">
+                            <div>
+                                <div class="test-info">Score: ${entry.score} • ${entry.date}</div>
+                                <div class="test-meta">Time: ${entry.time}</div>
+                            </div>
+                            <button class="delete-btn" onclick="removeScore('${test}', '${entry.id}')">🗑️</button>
+                        </div>
+                        `;
+                    });
+                }
+            });
+            
+            if (html === '') {
+                html = '<p style="color: #9CA3AF; text-align: center; padding: 40px;">No test scores yet. Add your first score above! 👆</p>';
+            }
+            
+            document.getElementById('testEntries').innerHTML = html;
+        }
+
+        // Remove score
+        function removeScore(testType, testId) {
+            if (confirm('Are you sure you want to delete this test entry?')) {
+                appData.scores[testType] = appData.scores[testType].filter(item => item.id !== testId);
+                saveData();
+                updateUI();
+                updateCharts();
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            const testTypes = ['listening', 'reading', 'writing', 'speaking'];
+            
+            testTypes.forEach(testType => {
+                const ctx = document.getElementById(`${testType}Chart`).getContext('2d');
+                
+                charts[testType] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Score',
+                            data: [],
+                            borderColor: '#4F46E5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 4,
+                                max: 9,
+                                grid: {
+                                    color: 'rgba(107, 114, 128, 0.3)'
+                                },
+                                ticks: {
+                                    color: '#9CA3AF'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(107, 114, 128, 0.3)'
+                                },
+                                ticks: {
+                                    color: '#9CA3AF'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            
+            updateCharts();
+        }
+
+        // Update charts
+        function updateCharts() {
+            const testTypes = ['listening', 'reading', 'writing', 'speaking'];
+            
+            testTypes.forEach(testType => {
+                const scores = appData.scores[testType];
+                const chart = charts[testType];
+                
+                if (scores.length > 0) {
+                    chart.data.labels = scores.map((_, index) => `Test ${index + 1}`);
+                    chart.data.datasets[0].data = scores.map(s => s.score);
+                } else {
+                    chart.data.labels = [];
+                    chart.data.datasets[0].data = [];
+                }
+                
+                chart.update();
+            });
+        }
+
+        // Export data
+        function exportData() {
+            const dataToExport = {
+                ...appData,
+                exportedAt: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `ielts_progress_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete ALL your progress data? This cannot be undone!')) {
+                if (confirm('This will permanently delete all your test scores. Click OK to confirm.')) {
+                    appData = {
+                        scores: {
+                            listening: [],
+                            reading: [],
+                            writing: [],
+                            speaking: []
+                        },
+                        targetDate: new Date('2025-11-01').toISOString().split('T')[0]
+                    };
+                    
+                    localStorage.removeItem('ieltsProgressData');
+                    updateUI();
+                    updateCharts();
+                    initializeForm();
+                    alert('All data cleared!');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
